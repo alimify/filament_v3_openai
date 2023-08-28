@@ -50,9 +50,10 @@ class GenerateImageJob implements ShouldQueue
         $this->image->progress = 50;
         $this->image->save();
         Log::info("prompt - " . $this->image->prompt);
+        
         $image_url = $image->generate($prompt);
         $path = "images/". Str::slug($this->image->keyword). uniqid() . ".jpg";
-        $file_contents = Http::timeout(120)->get($image_url);
+        $file_contents = Http::timeout(300)->get($image_url);
         Storage::disk('public')->put($path, $file_contents);
         $this->image->path = $path;
         $this->image->progress = 100;
