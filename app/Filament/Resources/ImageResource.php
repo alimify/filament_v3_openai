@@ -43,7 +43,8 @@ class ImageResource extends Resource
                 TextColumn::make('status')->badge()->colors([
                     'success' => 'completed',
                     'warning' => 'processing',
-                    'danger' => 'new'
+                    'danger'  => 'failed',
+                    'info'    => 'new'
                 ]),
                 TextColumn::make('progress'),
             ])

@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Actions\Alimify\OpenAI\GenerateImage;
 use App\Actions\Alimify\OpenAI\GeneratePrompt;
 use App\Models\Image;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -51,11 +52,12 @@ class GenerateImageJob implements ShouldQueue
         Log::info("prompt - " . $this->image->prompt);
         $image_url = $image->generate($prompt);
         $path = "images/". Str::slug($this->image->keyword). uniqid() . ".jpg";
-        $file_contents = Http::get($image_url);
+        $file_contents = Http::timeout(120)->get($image_url);
         Storage::disk('public')->put($path, $file_contents);
         $this->image->path = $path;
         $this->image->progress = 100;
         $this->image->status = 'completed';
+        $this->image->updated_at = Carbon::now();
         $this->image->save();
         Log::info("completed");
     }

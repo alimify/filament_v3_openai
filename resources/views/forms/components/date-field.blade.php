@@ -7,8 +7,10 @@
         <div class="text-gray-500 text-xs">
             @php
               $field = $getName();
-              if(!empty($getRecord()[$field])){
-               echo $getRecord()[$field]->diffForHumans();
+              if($getRecord()->$field){
+               echo $getRecord()->$field->diffForHumans();
+              }elseif($field == "updatet_at"){
+                echo $getRecord()->updated_at->diffForHumans();
               }
             @endphp
         </div>

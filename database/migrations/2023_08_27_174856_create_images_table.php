@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('prompt')->nullable();
             $table->string('path')->nullable();
             $table->integer('progress')->default(0);
-            $table->enum('status',['new','processing','completed'])->default('new');
+            $table->enum('status',['new','processing','completed','failed'])->default('new');
             $table->timestamps();
         });
     }
