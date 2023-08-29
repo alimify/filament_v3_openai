@@ -42,6 +42,7 @@ class GenerateImageJob implements ShouldQueue
         ): void
     {
         Log::info("started - ". $this->image->id);
+
         $this->image->status = 'processing';
         $this->image->progress = 25;
         $this->image->save();
@@ -49,17 +50,19 @@ class GenerateImageJob implements ShouldQueue
         $this->image->prompt = Str::of($prompt)->trim();
         $this->image->progress = 50;
         $this->image->save();
+
         Log::info("prompt - " . $this->image->prompt);
         
-        $image_url = $image->generate($prompt);
+        $imageUrl = $image->generate($prompt);
         $path = "images/". Str::slug($this->image->keyword). uniqid() . ".jpg";
-        $file_contents = Http::timeout(300)->get($image_url);
-        Storage::disk('public')->put($path, $file_contents);
+        $fileContents = Http::timeout(300)->get($imageUrl);
+        Storage::disk('public')->put($path, $fileContents);
         $this->image->path = $path;
         $this->image->progress = 100;
         $this->image->status = 'completed';
         $this->image->updated_at = Carbon::now();
         $this->image->save();
+        
         Log::info("completed");
     }
 }

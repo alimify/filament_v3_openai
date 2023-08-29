@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ImageResource\Pages;
 use App\Filament\Resources\ImageResource\RelationManagers;
+use App\Forms\Components\DateField;
+use App\Forms\Components\ImageField;
 use App\Models\Image;
 use Filament\Actions\CreateAction;
 use Filament\Forms;
@@ -19,7 +21,9 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Storage;
-use Tables\Actions\DeleteAction as TableDeleteAction;
+use Filament\Tables\Actions\DeleteAction as TableDeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction as TableDeleteBulkAction;
+use Filament\Tables\Actions\BulkActionGroup as TableBulkActionGroup;
 
 class ImageResource extends Resource
 {
@@ -55,27 +59,19 @@ class ImageResource extends Resource
                 Tables\Actions\ViewAction::make()->form([
                     TextInput::make('keyword'),
                     Textarea::make('prompt'),
-                    ViewField::make('path')->label('Image')
-                                           ->view('forms.components.image-field'),
-                    ViewField::make('created_at')->label('Create Date')
-                                                 ->view('forms.components.date-field'),
-                    ViewField::make('updatet_at')->label('Last Modified')
-                                                 ->view('forms.components.date-field'),
+                    ImageField::make('path')->label('Image'),
+                    DateField::make('created_at')->label('Create Date'),
+                    DateField::make('updatet_at')->label('Last Modified'),
                 ])->modalWidth('2xl')->modalHeading('Show Image'),
-                
-                Tables\Actions\DeleteAction::make()->after(function(Tables\Actions\DeleteAction $action){
-                    if($action->getRecord()->path && Storage::disk('public')->exists($action->getRecord()->path)){
-                        Storage::disk('public')->delete($action->getRecord()->path);
-                    }
+                TableDeleteAction::make()->after(function(TableDeleteAction $action){
+                   self::deleteFile($action->getRecord()->path);
                 }),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()->after(function (Tables\Actions\DeleteBulkAction $action){
+                TableBulkActionGroup::make([
+                    TableDeleteBulkAction::make()->after(function (TableDeleteBulkAction $action){
                         foreach ($action->getRecords() as $record) {
-                            if($record->path && Storage::disk('public')->exists($record->path)){
-                                Storage::disk('public')->delete($record->path);
-                            }
+                            self::deleteFile($record->path);
                         }
                     }),
                 ]),
@@ -99,5 +95,13 @@ class ImageResource extends Resource
             // 'create' => Pages\CreateImage::route('/create'),
             // 'edit' => Pages\EditImage::route('/{record}/edit'),
         ];
-    }    
+    }
+    
+    
+    public static function deleteFile($path): void
+    {
+        if($path && Storage::disk('public')->exists($path)){
+            Storage::disk('public')->delete($path);
+        }
+    }
 }

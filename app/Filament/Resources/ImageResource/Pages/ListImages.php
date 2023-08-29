@@ -19,7 +19,7 @@ class ListImages extends ListRecords
         return [
             Actions\CreateAction::make()->after(function(CreateAction $action){
                 GenerateImageJob::dispatch($action->getRecord())->delay(Carbon::now()->addSeconds(3));
-            }),
+            })->label('Generate Image'),
         ];
     }
 }
